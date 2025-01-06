@@ -76,7 +76,7 @@ cp .env.example .env
 Dockerコンテナを起動
 
 ```bash
-docker-compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.dev.yml up --build
 ```
 
 ### Server側の更新反映
@@ -84,15 +84,15 @@ docker-compose -f docker-compose.dev.yml up --build
 Server側は、`server`ディレクトリがボリュームとしてマウントされているため、Server側のファイルを更新してコンテナを再起動するだけで更新が反映されます。
 
 ```bash
-docker-compose -f docker-compose.dev.yml restart
+docker compose -f docker-compose.dev.yml restart
 ```
 
 ただし、マイグレーションファイルを更新した場合などDBのスキーマが更新される場合は、ボリュームの再作成を推奨します。
 (この時DBのデータは全て消えるので注意してください。開発時はseederを作るなどしてダミーデータを生成すると良いでしょう)
 
 ```bash
-docker-compose -f docker-compose.dev.yml down -v
-docker-compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml up --build
 ```
 
 ### Client側の更新反映
@@ -102,8 +102,8 @@ docker-compose -f docker-compose.dev.yml up --build
 (この時DBのデータは全て消えるので注意してください。開発時はseederを作るなどしてダミーデータを生成すると良いでしょう)
 
 ```bash
-docker-compose -f docker-compose.dev.yml down -v
-docker-compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml up --build
 ```
 
 これでDockerコンテナ内の`node_modules`が更新されます。
@@ -114,6 +114,7 @@ docker-compose -f docker-compose.dev.yml up --build
 2. Dockerをインストールします。
 3. このリポジトリをクローンします。
 4. `.env`ファイルを作成します。(`.env.example`をコピーして、中身を編集してください)
-5. `docker compose up -d --build`を実行します。
+5. `.env`ファイルに`MODE=production`を追加します。(未設定状態だと`development`となります)
+6. `docker compose -f docker-compose.prod.yml up -d --build`を実行します。
 
 これで、Webアプリケーションが`:80`ポートで公開されます。
