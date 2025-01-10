@@ -39,9 +39,10 @@ type SignupRequest struct {
 }
 
 type TokenUserResponse struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID    				int    `json:"id"`
+	Name  				string `json:"name"`
+	Email 				string `json:"email"`
+	DefaultTodoListID 	int `json:"default_todo_list_id"`
 }
 
 type TokenResponse struct {
@@ -64,6 +65,13 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
 
+	//トランザクションを開始（ユーザー作成後、デフォルトTODOリストの作成に失敗したら戻す）
+	tx, err := h.db.Beginx()
+	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+	defer tx.Rollback()
+
 	res, err := h.db.Exec("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)", req.Name, req.Email, string(hash))
 	if err != nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
@@ -71,6 +79,29 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 
 	id, err := res.LastInsertId()
 	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+
+	//デフォルトTODOリスト作成
+	defaultTodoListName := req.Name + "のTODO"
+	_, err = h.db.Exec("INSERT INTO todo_lists (user_id, name, id_default) VALUES (?, ?, ?)", id, defaultTodoListName, true)
+	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+
+	defaultTodoListID, err := res.LastInsertId()
+	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+
+	//ユーザーのデフォルトTODOを追加
+	res, err = tx.Exec("UPDATE users SET default_todo_list_id = ? WHERE id = ?", defaultTodoListID, id)
+	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+
+	// トランザクションをコミット
+	if err := tx.Commit(); err != nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
 
@@ -85,7 +116,7 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
 
-	return c.JSON(200, TokenResponse{Token: token, User: TokenUserResponse{ID: user.ID, Name: user.Name, Email: user.Email}})
+	return c.JSON(200, TokenResponse{Token: token, User: TokenUserResponse{ID: user.ID, Name: user.Name, Email: user.Email, DefaultTodoListID: user.DefaultTodoListID}})
 }
 
 type LoginRequest struct {
@@ -119,13 +150,14 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
 
-	return c.JSON(200, TokenResponse{Token: token, User: TokenUserResponse{ID: user.ID, Name: user.Name, Email: user.Email}})
+	return c.JSON(200, TokenResponse{Token: token, User: TokenUserResponse{ID: user.ID, Name: user.Name, Email: user.Email, DefaultTodoListID: user.DefaultTodoListID}})
 }
 
 type MeResponse struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID    				int    `json:"id"`
+	Name  				string `json:"name"`
+	Email 				string `json:"email"`
+	DefaultTodoListID 	int `json:"default_todo_list_id"`
 }
 
 func (h *AuthHandler) Me(c echo.Context) error {
@@ -137,5 +169,5 @@ func (h *AuthHandler) Me(c echo.Context) error {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
 
-	return c.JSON(200, MeResponse{ID: user.ID, Name: user.Name, Email: user.Email})
+	return c.JSON(200, MeResponse{ID: user.ID, Name: user.Name, Email: user.Email, DefaultTodoListID: user.DefaultTodoListID})
 }
