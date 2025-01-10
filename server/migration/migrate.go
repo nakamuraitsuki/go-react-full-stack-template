@@ -11,8 +11,10 @@ func Migrate(db *sqlx.DB) error {
 			name VARCHAR(255) NOT NULL,
 			email VARCHAR(255) NOT NULL UNIQUE,
 			password_hash VARCHAR(255) NOT NULL,
+			default_todo_list_id INT NOT NULL,
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+			FOREIGN KEY (default_todo_list_id) REFERENCES todo_lists(id)
 		)
 	`)
 	if err != nil {
