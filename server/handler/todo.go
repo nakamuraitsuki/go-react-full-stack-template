@@ -6,6 +6,7 @@ import (
 	"log"
 	"server/model"
 	"sort"
+	"strconv"
 
 	"github.com/go-playground/validator"
 	"github.com/jmoiron/sqlx"
@@ -35,7 +36,14 @@ type GetTodosResponse struct {
 }
 
 func (h *TodoHandler) GetTodos(c echo.Context) error {
-	todoListID := c.Get("todo_list_id").(int)
+	todoListID := c.QueryParam("todo_list_id")
+    if todoListID == "" {
+        return c.JSON(400, map[string]string{"message": "user_id is required"})
+    }
+
+	if _, err := strconv.Atoi(todoListID); err != nil {
+        return c.JSON(400, map[string]string{"message": "user_id must be a valid integer"})
+    }
 
 	var todos []model.Todo
 	err := h.db.Select(&todos, "SELECT * FROM todos WHERE todo_list_id = ?", todoListID)
@@ -74,7 +82,14 @@ type CreateTodoResponse struct {
 }
 
 func (h *TodoHandler) CreateTodo(c echo.Context) error {
-	todoListID := c.Get("todo_list_id").(int)
+	todoListID := c.QueryParam("todo_list_id")
+    if todoListID == "" {
+        return c.JSON(400, map[string]string{"message": "user_id is required"})
+    }
+
+	if _, err := strconv.Atoi(todoListID); err != nil {
+        return c.JSON(400, map[string]string{"message": "user_id must be a valid integer"})
+    }
 
 	req := new(CreateTodoRequest)
 	if err := c.Bind(req); err != nil {
@@ -105,7 +120,14 @@ type UpdateTodoRequest struct {
 }
 
 func (h *TodoHandler) UpdateTodo(c echo.Context) error {
-	todoListID := c.Get("todo_list_id").(int)
+	todoListID := c.QueryParam("todo_list_id")
+    if todoListID == "" {
+        return c.JSON(400, map[string]string{"message": "user_id is required"})
+    }
+
+	if _, err := strconv.Atoi(todoListID); err != nil {
+        return c.JSON(400, map[string]string{"message": "user_id must be a valid integer"})
+    }
 
 	req := new(UpdateTodoRequest)
 	if err := c.Bind(req); err != nil {
@@ -130,7 +152,14 @@ type DeleteTodoRequest struct {
 }
 
 func (h *TodoHandler) DeleteTodo(c echo.Context) error {
-	todoListID := c.Get("todo_list_id").(int)
+	todoListID := c.QueryParam("todo_list_id")
+    if todoListID == "" {
+        return c.JSON(400, map[string]string{"message": "user_id is required"})
+    }
+
+	if _, err := strconv.Atoi(todoListID); err != nil {
+        return c.JSON(400, map[string]string{"message": "user_id must be a valid integer"})
+    }
 
 	req := new(DeleteTodoRequest)
 	if err := c.Bind(req); err != nil {
