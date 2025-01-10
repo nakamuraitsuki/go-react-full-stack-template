@@ -24,6 +24,7 @@ func NewTodoListHandler(db *sqlx.DB) *TodoListHandler {
 
 func (h *TodoListHandler) Register(g *echo.Group) {
 	g.GET("/todolists", h.GetTodoListsByUser)
+	g.POST("/todolists", h.CreateTodoList)
 }
 
 type GetTodoListsByUserResponse struct {
@@ -56,4 +57,38 @@ func (h *TodoListHandler) GetTodoListsByUser(c echo.Context) error {
 	}
 
 	return c.JSON(200, res)
+}
+
+type CreateTodoListRequest struct {
+	Name string `json:"name" validate:"required"`
+}
+
+type CreateTodoListResponse struct {
+	ID int `json:"id"`
+	Name string `json:"name"`
+}
+
+//TODOリスト作成
+func (h *TodoListHandler) CreateTodoList(c echo.Context) error {
+	userID := c.Get("user_id").(int)
+
+	req := new(CreateTodoListRequest)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(400, map[string]string{"message": "Bad Request"})
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		return c.JSON(400, map[string]string{"message": "Bad Request"})
+	}
+
+	res, err := h.db.Exec("INSERT INTO todo_lists (user_id, name) VALUES (?, ?)", userID, req.Name)
+	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+
+	id, _ := res.LastInsertId()
+	return c.JSON(201, CreateTodoListResponse{
+		ID: 	int(id),
+		Name: 	req.Name,
+	})
 }
