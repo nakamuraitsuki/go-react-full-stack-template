@@ -12,6 +12,7 @@ type User = {
   id: number;
   name: string;
   email: string;
+  defaultTodoListID: number
 };
 
 type AuthContextType = {
