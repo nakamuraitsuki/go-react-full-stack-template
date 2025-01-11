@@ -5,9 +5,9 @@ import { Container } from "./components/container/container";
 import { AuthGuard } from "./components/auth-guard";
 
 const Top = lazy(() => import("./pages/top"));
-const Todo = lazy(() => import("./pages/todo"));
 const Login = lazy(() => import("./pages/login"));
 const SignUp = lazy(() => import("./pages/signup"));
+const MyPage = lazy(() => import("./pages/my-page"))
 
 function App() {
   return (
@@ -17,10 +17,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Top />} />
           <Route
-            path="/todos"
+            path="/my-page"
             element={
               <AuthGuard>
-                <Todo />
+                <MyPage />
               </AuthGuard>
             }
           />
