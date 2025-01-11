@@ -72,7 +72,7 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 	}
 	defer tx.Rollback()
 
-	res, err := h.db.Exec("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)", req.Name, req.Email, string(hash))
+	res, err := tx.Exec("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)", req.Name, req.Email, string(hash))
 	if err != nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
@@ -84,7 +84,7 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 
 	//デフォルトTODOリスト作成
 	defaultTodoListName := req.Name + "のTODO"
-	_, err = h.db.Exec("INSERT INTO todo_lists (user_id, name, id_default) VALUES (?, ?, ?)", id, defaultTodoListName, true)
+	res, err = tx.Exec("INSERT INTO todo_lists (user_id, name, is_default) VALUES (?, ?, ?)", id, defaultTodoListName, true)
 	if err != nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
