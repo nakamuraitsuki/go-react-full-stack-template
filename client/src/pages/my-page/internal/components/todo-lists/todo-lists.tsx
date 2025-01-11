@@ -5,7 +5,7 @@ interface TodoListsProps {
 }
 
 export const TodoLists = async ({ userID }: TodoListsProps) => {
-    const todoLists = await serverFetch(`/api//todolists?user_id=${userID}`);
+    const todoLists = await serverFetch(`/api/todolists?user_id=${userID}`);
     console.log(todoLists);
     return(
         <div>

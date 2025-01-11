@@ -20,7 +20,6 @@ export const MyPage = () => {
                 <TodoLists userID={user.id}/>
             </div>
             <div>
-
                 <TodoCreateForm todoListID={user.defaultTodoListID} refetch={fetchTodos} />
                 <TodoList todos={todos} refetch={fetchTodos} />
             </div>
