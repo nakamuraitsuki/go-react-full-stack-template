@@ -100,7 +100,7 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
 
-	// トランザクションをコミット
+	//コミット
 	if err := tx.Commit(); err != nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
