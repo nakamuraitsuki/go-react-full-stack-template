@@ -9,18 +9,24 @@ type Todo = {
 
 export const  useTodos = (todoListID: number) => {
     const [todos,setTodos] = useState<Todo[]>([]);
+    const [todoListName,setTodoListName] = useState("");
 
     const fetchTodos = async () => {
-        const res = await serverFetch(`/api/todos?todo_list_id=${todoListID}`);
+        var res = await serverFetch(`/api/todos?todo_list_id=${todoListID}`);
         setTodos(await res.json());
+        
+        res = await serverFetch(`/api/todo-lists/${todoListID}`);
+        const data = await res.json();
+        setTodoListName(data.Name);
     };
 
     useEffect(() => {
         fetchTodos();
-    },[]);
+    },[todoListID]);
 
     return {
         todos,
+        todoListName,
         fetchTodos,
     };
 };

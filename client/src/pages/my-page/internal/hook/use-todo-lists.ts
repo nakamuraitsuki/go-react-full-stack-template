@@ -10,7 +10,7 @@ export const useTodoLists = () => {
     const [todoLists,setTodoLists] = useState<TodoList[]>([]);
 
     const fetchTodoLists = async () => {
-        const res = await serverFetch("/api/todolists");
+        const res = await serverFetch("/api/todo-lists");
         const data = await res.json();
         setTodoLists(data);
     }

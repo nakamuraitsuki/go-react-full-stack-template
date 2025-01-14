@@ -23,11 +23,12 @@ func NewTodoListHandler(db *sqlx.DB) *TodoListHandler {
 }
 
 func (h *TodoListHandler) Register(g *echo.Group) {
-	g.GET("/todolists", h.GetTodoListsByUser)
-	g.POST("/todolists", h.CreateTodoList)
+	g.GET("/todo-lists", h.GetTodoListsByUser)
+	g.GET("/todo-lists/:id", h.GetTodoListsByID)
+	g.POST("/todo-lists", h.CreateTodoList)
 }
 
-type GetTodoListsByUserResponse struct {
+type GetTodoListsResponse struct {
 	ID int `json:"id"`
 	Name string `json:"name"`
 }
@@ -43,20 +44,36 @@ func (h *TodoListHandler) GetTodoListsByUser(c echo.Context) error {
 		log.Println(err)
 		//0件取得でのエラーの場合
 		if errors.Is(err, sql.ErrNoRows) {
-			return c.JSON(200, []GetTodoListsByUserResponse{})
+			return c.JSON(200, []GetTodoListsResponse{})
 		}
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
 
-	res := make([]GetTodoListsByUserResponse, len(todoLists))
+	res := make([]GetTodoListsResponse, len(todoLists))
 	for i, todolist := range todoLists {
-		res[i] = GetTodoListsByUserResponse{
+		res[i] = GetTodoListsResponse{
 			ID:		todolist.ID,
 			Name: 	todolist.Name,
 		}
 	}
 
 	return c.JSON(200, res)
+}
+
+func (h *TodoListHandler) GetTodoListsByID(c echo.Context) error {
+    id := c.Param("id")
+    if id == "" {
+        return c.JSON(400, map[string]string{"message": "user_id is required"})
+    }
+
+	var todoList model.TodoList
+	err := h.db.Get(&todoList, "SELECT * FROM todo_lists WHERE id = ?", id)
+	if err != nil {
+		log.Println(err)
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+
+	return c.JSON(200, todoList)
 }
 
 type CreateTodoListRequest struct {

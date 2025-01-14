@@ -45,16 +45,16 @@ export const TodoCreateForm = ({ todoListID, refetch }: TodoCreateFormProps) => 
     );
 
     const [error, submitAction] = useActionState(AddTodoAction, {
-    message: "",
+        message: "",
     });
     
-      return (
-        <>
-          <form action={submitAction} className="TodoCreateForm">
-            <Input type="text" name="title" className="TodoCreateForm__input" />
-            <Button type="submit">追加</Button>
-          </form>
-          {error && <p className="TodoCreateForm__error">{error.message}</p>}
-        </>
-      );
+    return (
+    <div>
+        <form action={submitAction} className="TodoCreateForm">
+        <Input type="text" name="title" className="TodoCreateForm__input" />
+        <Button type="submit">追加</Button>
+        </form>
+        {error && <p className="TodoCreateForm__error">{error.message}</p>}
+    </div>
+    );
 }

@@ -101,7 +101,7 @@ export const TodoListItem = ({ todo, refetch }: TodoListItemProps) => {
           </button>
         </form>
       ) : (
-        <>
+        <div>
           <span
             className={`TodoList__title ${
               todo.completed ? "TodoList__title--completed" : ""
@@ -117,7 +117,7 @@ export const TodoListItem = ({ todo, refetch }: TodoListItemProps) => {
           >
             <Edit />
           </button>
-        </>
+        </div>
       )}
       <input
         type="checkbox"
