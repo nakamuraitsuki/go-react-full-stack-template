@@ -7,6 +7,8 @@ import { useState } from "react";
 import { useTodoLists } from "./internal/hook/use-todo-lists";
 import { TodoListsCreateForm } from "./internal/components/todo-lists-create-form";
 
+import "./myPage.css";
+
 export const MyPage = () => {
     const { user } = useAuth();
     if (!user) return null;
@@ -15,7 +17,7 @@ export const MyPage = () => {
     const { todoLists, fetchTodoLists } = useTodoLists()
     
     return (
-        <div>
+        <div className="my-page__container">
             <div>
                 <h3>{user.name}</h3>
                 <TodoListsCreateForm refetch={fetchTodoLists}/>
@@ -23,7 +25,7 @@ export const MyPage = () => {
             </div>
             <div>
                 <h1>{user.name}のマイページ</h1>
-                {todoListName}
+                <h2>{todoListName}</h2>
                 <TodoCreateForm todoListID={todoListID} refetch={fetchTodos} />
                 <TodoList todos={todos} refetch={fetchTodos} />
             </div>

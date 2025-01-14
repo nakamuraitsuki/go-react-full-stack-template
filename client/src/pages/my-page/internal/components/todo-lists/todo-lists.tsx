@@ -1,5 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
 
+import "./todo-lists.css";
+
 type TodoList = {
     id: number;
     name: string;
@@ -13,7 +15,7 @@ interface TodoListsProps {
 export const TodoLists = ({ todoLists, setTodoListID }: TodoListsProps) => {
 
     return(
-        <div>
+        <div className="todo-lists__container">
             {todoLists.map((list) => (
                 <button
                     key={list.id}
