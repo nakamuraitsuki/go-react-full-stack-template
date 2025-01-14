@@ -13,13 +13,13 @@ export const MyPage = () => {
     
     return (
         <div>
-            <h1>{user.name}のマイページ</h1>
             <div>
                 <h3>{user.name}</h3>
                 <TodoLists userID={user.id}/>
             </div>
             <div>
-                <TodoCreateForm todoListID={user.defaultTodoListID} refetch={fetchTodos} />
+                <h1>{user.name}のマイページ</h1>
+                <TodoCreateForm todoListID={todoListID} refetch={fetchTodos} />
                 <TodoList todos={todos} refetch={fetchTodos} />
             </div>
         </div>
