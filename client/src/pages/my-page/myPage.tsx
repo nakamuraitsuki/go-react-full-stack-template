@@ -4,18 +4,20 @@ import { TodoCreateForm } from "./internal/components/todo-create-form";
 import { useTodos } from "./internal/hook/use-todos";
 import { TodoLists } from "./internal/components/todo-lists";
 import { useState } from "react";
+import { useTodoLists } from "./internal/hook/use-todo-lists";
 
 export const MyPage = () => {
     const { user } = useAuth();
     if (!user) return null;
     const [todoListID,setTodoListID] = useState(user.defaultTodoListID)
     const { todos, fetchTodos } = useTodos(todoListID)
+    const { todoLists } = useTodoLists()
     
     return (
         <div>
             <div>
                 <h3>{user.name}</h3>
-                <TodoLists userID={user.id}/>
+                <TodoLists todoLists={todoLists} setTodoListID={setTodoListID}/>
             </div>
             <div>
                 <h1>{user.name}のマイページ</h1>
