@@ -8,10 +8,8 @@ export const MyPage = () => {
     const { user } = useAuth();
     if (!user) return null;
 
-    console.log(user);
     const { todos, fetchTodos } = useTodos(user.defaultTodoListID)
     
-    console.log(todos)
     return (
         <div>
             <h1>{user.name}のマイページ</h1>
