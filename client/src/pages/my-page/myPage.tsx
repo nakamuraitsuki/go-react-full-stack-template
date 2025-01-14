@@ -3,12 +3,13 @@ import { TodoList } from "./internal/components/todo-list";
 import { TodoCreateForm } from "./internal/components/todo-create-form";
 import { useTodos } from "./internal/hook/use-todos";
 import { TodoLists } from "./internal/components/todo-lists";
+import { useState } from "react";
 
 export const MyPage = () => {
     const { user } = useAuth();
     if (!user) return null;
-
-    const { todos, fetchTodos } = useTodos(user.defaultTodoListID)
+    const [todoListID,setTodoListID] = useState(user.defaultTodoListID)
+    const { todos, fetchTodos } = useTodos(todoListID)
     
     return (
         <div>
