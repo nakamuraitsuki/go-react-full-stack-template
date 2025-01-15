@@ -98,6 +98,8 @@ func main() {
 	apiGroup.Use(authMiddleware.Middleware())
 	todoHandler := handler.NewTodoHandler(db)
 	todoHandler.Register(apiGroup)
+	todoListHandler := handler.NewTodoListHandler(db)
+	todoListHandler.Register(apiGroup)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", APP_PORT)))
 }

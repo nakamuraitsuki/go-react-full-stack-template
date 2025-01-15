@@ -51,7 +51,7 @@ export const SignUp = () => {
         const data = await res.json();
         localStorage.setItem("token", data.token);
         setUser(data.user);
-        navigate("/todos");
+        navigate("/my-page");
         return { message: "" };
       }
 

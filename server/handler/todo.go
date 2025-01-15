@@ -3,9 +3,9 @@ package handler
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"server/model"
 	"sort"
+	"strconv"
 
 	"github.com/go-playground/validator"
 	"github.com/jmoiron/sqlx"
@@ -35,12 +35,18 @@ type GetTodosResponse struct {
 }
 
 func (h *TodoHandler) GetTodos(c echo.Context) error {
-	userID := c.Get("user_id").(int)
+	todoListID := c.QueryParam("todo_list_id")
+    if todoListID == "" {
+        return c.JSON(400, map[string]string{"message": "user_id is required"})
+    }
+
+	if _, err := strconv.Atoi(todoListID); err != nil {
+        return c.JSON(400, map[string]string{"message": "user_id must be a valid integer"})
+    }
 
 	var todos []model.Todo
-	err := h.db.Select(&todos, "SELECT * FROM todos WHERE user_id = ?", userID)
+	err := h.db.Select(&todos, "SELECT * FROM todos WHERE todo_list_id = ?", todoListID)
 	if err != nil {
-		log.Println(err)
 		if errors.Is(err, sql.ErrNoRows) {
 			return c.JSON(200, []GetTodosResponse{})
 		}
@@ -64,6 +70,7 @@ func (h *TodoHandler) GetTodos(c echo.Context) error {
 }
 
 type CreateTodoRequest struct {
+	TodoListID int `json:"todo_list_id" validate:"required"`
 	Title string `json:"title" validate:"required"`
 }
 
@@ -74,8 +81,6 @@ type CreateTodoResponse struct {
 }
 
 func (h *TodoHandler) CreateTodo(c echo.Context) error {
-	userID := c.Get("user_id").(int)
-
 	req := new(CreateTodoRequest)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(400, map[string]string{"message": "Bad Request"})
@@ -85,7 +90,7 @@ func (h *TodoHandler) CreateTodo(c echo.Context) error {
 		return c.JSON(400, map[string]string{"message": "Bad Request"})
 	}
 
-	res, err := h.db.Exec("INSERT INTO todos (user_id, title) VALUES (?, ?)", userID, req.Title)
+	res, err := h.db.Exec("INSERT INTO todos (todo_list_id, title) VALUES (?, ?)", req.TodoListID, req.Title)
 	if err != nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
@@ -105,19 +110,16 @@ type UpdateTodoRequest struct {
 }
 
 func (h *TodoHandler) UpdateTodo(c echo.Context) error {
-	userID := c.Get("user_id").(int)
-
 	req := new(UpdateTodoRequest)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(400, map[string]string{"message": "Bad Request"})
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		log.Println("validator error: ", err)
 		return c.JSON(400, map[string]string{"message": "Bad Request"})
 	}
 
-	_, err := h.db.Exec("UPDATE todos SET title = ?, completed = ? WHERE id = ? AND user_id = ?", req.Title, req.Completed, req.Id, userID)
+	_, err := h.db.Exec("UPDATE todos SET title = ?, completed = ? WHERE id = ?", req.Title, req.Completed, req.Id)
 	if err != nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
@@ -130,8 +132,6 @@ type DeleteTodoRequest struct {
 }
 
 func (h *TodoHandler) DeleteTodo(c echo.Context) error {
-	userID := c.Get("user_id").(int)
-
 	req := new(DeleteTodoRequest)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(400, map[string]string{"message": "Bad Request"})
@@ -141,7 +141,7 @@ func (h *TodoHandler) DeleteTodo(c echo.Context) error {
 		return c.JSON(400, map[string]string{"message": "Bad Request"})
 	}
 
-	_, err := h.db.Exec("DELETE FROM todos WHERE id = ? AND user_id = ?", req.ID, userID)
+	_, err := h.db.Exec("DELETE FROM todos WHERE id = ?", req.ID)
 	if err != nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}

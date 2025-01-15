@@ -12,6 +12,7 @@ type User = {
   id: number;
   name: string;
   email: string;
+  defaultTodoListID: number
 };
 
 type AuthContextType = {
@@ -31,7 +32,14 @@ const fetchUser = async (): Promise<User | null> => {
   const res = await serverFetch("/auth/me");
 
   if (res.ok) {
-    return res.json();
+    const data = await res.json();
+
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      defaultTodoListID: data.default_todo_list_id,
+    } as User
   }
 
   localStorage.removeItem("token");
