@@ -26,6 +26,7 @@ func (h *TodoListHandler) Register(g *echo.Group) {
 	g.GET("/todo-lists", h.GetTodoListsByUser)
 	g.GET("/todo-lists/:id", h.GetTodoListsByID)
 	g.POST("/todo-lists", h.CreateTodoList)
+	g.PUT("/todo-lists/:id", h.UpdateTodoList)
 }
 
 type GetTodoListsResponse struct {
@@ -108,4 +109,32 @@ func (h *TodoListHandler) CreateTodoList(c echo.Context) error {
 		ID: 	int(id),
 		Name: 	req.Name,
 	})
+}
+
+type UpdateTodoListRequest struct {
+	Name string `json:"name"`
+}
+
+//TodoListを編集する
+func (h *TodoListHandler) UpdateTodoList(c echo.Context) error {
+	id := c.Param("id")
+    if id == "" {
+        return c.JSON(400, map[string]string{"message": "user_id is required"})
+    }
+
+	req := new(UpdateTodoListRequest)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(400, map[string]string{"message": "Bad Request"})
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		return c.JSON(400, map[string]string{"message": "Bad Request"})
+	}
+
+	_, err := h.db.Exec("UPDATE todo_lists SET name = ? WHERE id = ?", req.Name, id)
+	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+
+	return c.JSON(200, nil)
 }
