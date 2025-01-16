@@ -112,16 +112,12 @@ func (h *TodoListHandler) CreateTodoList(c echo.Context) error {
 }
 
 type UpdateTodoListRequest struct {
+	ID int `param:"id" validate:"required"`
 	Name string `json:"name"`
 }
 
 //TodoListを編集する
 func (h *TodoListHandler) UpdateTodoList(c echo.Context) error {
-	id := c.Param("id")
-    if id == "" {
-        return c.JSON(400, map[string]string{"message": "user_id is required"})
-    }
-
 	req := new(UpdateTodoListRequest)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(400, map[string]string{"message": "Bad Request"})
@@ -131,7 +127,7 @@ func (h *TodoListHandler) UpdateTodoList(c echo.Context) error {
 		return c.JSON(400, map[string]string{"message": "Bad Request"})
 	}
 
-	_, err := h.db.Exec("UPDATE todo_lists SET name = ? WHERE id = ?", req.Name, id)
+	_, err := h.db.Exec("UPDATE todo_lists SET name = ? WHERE id = ?", req.Name, req.ID)
 	if err != nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
