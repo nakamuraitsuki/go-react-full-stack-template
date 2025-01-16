@@ -27,6 +27,7 @@ func (h *TodoListHandler) Register(g *echo.Group) {
 	g.GET("/todo-lists/:id", h.GetTodoListsByID)
 	g.POST("/todo-lists", h.CreateTodoList)
 	g.PUT("/todo-lists/:id", h.UpdateTodoList)
+	g.DELETE("/todo-lists/:id", h.DeleteTodoList)
 }
 
 type GetTodoListsResponse struct {
@@ -129,6 +130,49 @@ func (h *TodoListHandler) UpdateTodoList(c echo.Context) error {
 
 	_, err := h.db.Exec("UPDATE todo_lists SET name = ? WHERE id = ?", req.Name, req.ID)
 	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+
+	return c.JSON(200, nil)
+}
+
+type DeleteTodoListRequest struct {
+	ID int `param:"id" validate:"required"`
+}
+
+func (h *TodoListHandler) DeleteTodoList(c echo.Context) error {
+	req := new(DeleteTodoListRequest)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(400, map[string]string{"message": "Bad Request"})
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		return c.JSON(400, map[string]string{"message": "Bad Request"})
+	}
+
+	//トランザクション開始（TodoListそのものの削除とTodoListに含まれていたTodoの削除）
+	tx, err := h.db.Beginx()
+	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+	func() {
+		if err != nil {
+			tx.Rollback() // エラーが発生した場合のみロールバック
+		}
+	}()
+
+	_, err = tx.Exec("DELETE FROM todo_lists WHERE id = ?", req.ID)
+	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+
+	_, err = tx.Exec("DELETE FROM todos WHERE todo_list_id = ?", req.ID)
+	if err != nil {
+		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
+	}
+
+	//コミット
+	if err := tx.Commit(); err !=nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
 
