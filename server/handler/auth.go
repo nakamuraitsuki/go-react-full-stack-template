@@ -70,7 +70,11 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 	if err != nil {
 		return c.JSON(500, map[string]string{"message": "Internal Server Error"})
 	}
-	defer tx.Rollback()
+	func() {
+		if err != nil {
+			tx.Rollback() // エラーが発生した場合のみロールバック
+		}
+	}()
 
 	res, err := tx.Exec("INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)", req.Name, req.Email, string(hash))
 	if err != nil {
